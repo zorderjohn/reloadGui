@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -70,13 +71,16 @@ namespace ReloadGUI
             switch (m_portC.getDevState())
             {
                 case ReloadController.DeviceStatus.DEV_STATUS_ERR:
-                    status.Text = m_portC.getDevErrorDesc();
+                    status.Text = "Error: " + m_portC.getDevErrorDesc();
                     break;
                 case ReloadController.DeviceStatus.DEV_STATUS_OVERTEMP:
                     status.Text = "Overtemperature!!";
                     break;
                 case ReloadController.DeviceStatus.DEV_STATUS_UNDERVOLT:
                     status.Text = "UnderVolt!!";
+                    break;
+                default:
+                    status.Text = "Unknown error";
                     break;
 
             }
@@ -102,6 +106,9 @@ namespace ReloadGUI
 
         private void setCurrent() 
         {
+            //tmrMonitor.Enabled = false;
+            Debug.Print("set current\n");
+            status.Text = "Set current to: " + numSetCurrent.Value.ToString();
             int response = m_portC.setCurrent((int)(numSetCurrent.Value * 1000));
 
             if (response == -1)
@@ -113,10 +120,11 @@ namespace ReloadGUI
             {
                 if (numSetCurrent.Value * 1000 != response)
                 {
-                    numSetCurrent.Value = response;
+                    numSetCurrent.Value = response / 1000M;
                 }
                 lastSetCurrent = (decimal) response / 1000M;
             }
+            tmrMonitor.Enabled = true;
         }
 
         private void chkAutoSet_CheckedChanged(object sender, EventArgs e)
@@ -140,7 +148,14 @@ namespace ReloadGUI
 
         private void btnDec10_Click(object sender, EventArgs e)
         {
-            numSetCurrent.Value -= .010M;
+            if (numSetCurrent.Value >= .010M)
+            {
+                numSetCurrent.Value -= .010M;
+            }
+            else
+            {
+                numSetCurrent.Value = 0M;
+            }
         }
 
         private void btnInc100_Click(object sender, EventArgs e)
@@ -150,17 +165,32 @@ namespace ReloadGUI
 
         private void btnDec100_Click(object sender, EventArgs e)
         {
-            numSetCurrent.Value -= .100M;
+            if (numSetCurrent.Value >= .100M)
+            {
+                numSetCurrent.Value -= .100M;
+            }
+            else
+            {
+                numSetCurrent.Value = 0M;
+            }
         }
 
         private void btnInc1000_Click(object sender, EventArgs e)
         {
             numSetCurrent.Value += 1M;
+
         }
 
         private void btnDec1000_Click(object sender, EventArgs e)
         {
-            numSetCurrent.Value -= 1M;
+            if (numSetCurrent.Value >= 1M)
+            {
+                numSetCurrent.Value -= 1M;
+            }
+            else
+            {
+                numSetCurrent.Value = 0M;
+            }
         }
 
         private void numSetCurrent_KeyDown(object sender, KeyEventArgs e)
@@ -191,18 +221,58 @@ namespace ReloadGUI
 
         private void tmrMonitor_Tick(object sender, EventArgs e)
         {
+           // Debug.Print("tick\n");
             showCurrentVoltage();
         }
 
         private void showCurrentVoltage()
         {
-            m_portC.updateCurrentVoltage();
+            if (chkMonitor.Enabled)
+            {
+                m_portC.updateCurrentVoltage();
+            }
+            else
+            {
+                m_portC.requestUpdate();
+            }
+
             lblCurrent.Text = formatNumber(m_portC.getCurrent(), "A");
             lblVolt.Text = formatNumber(m_portC.getVoltage(), "V");
             lblPower.Text = formatNumber(m_portC.getPower(), "W");
+
+            addGraphData(m_portC.getVoltage(), m_portC.getCurrent(), (float)numSetCurrent.Value);
         }
 
-        private string formatNumber(int number, string sufix)
+        void addGraphData(float volt, float current, float setCurrent)
+        {
+            if (chartTime.Series[0].Points.Count > 100)
+            {
+                chartTime.Series[0].Points.RemoveAt(0);
+                chartTime.Series[1].Points.RemoveAt(0);
+                chartTime.Series[2].Points.RemoveAt(0);
+
+            }
+
+            chartTime.Series[0].Points.Add(volt*0.001f);
+            chartTime.Series[1].Points.Add(current*0.001f);
+            chartTime.Series[2].Points.Add(setCurrent);
+
+            double maxVolt = chartTime.Series[0].Points.FindMaxByValue().YValues[0];
+            double maxInt = chartTime.Series[2].Points.FindMaxByValue().YValues[0];
+            
+            chartTime.ChartAreas[0].AxisY.Maximum = getScale(maxVolt);
+            chartTime.ChartAreas[0].AxisY2.Maximum = getScale(maxInt);
+            
+        }
+
+        double getScale(double value) {
+            double value1 = Math.Ceiling((value * 5d) / 5d);
+            
+            double value2 = Math.Max(0.2d, value1 * 5d * 0.2d);
+            return value2;
+        }
+
+        private string formatNumber(float number, string sufix)
         {
             float fNumber = number/1000f;
             return String.Format("{0:0.000}", fNumber) + " " + sufix;
@@ -215,6 +285,7 @@ namespace ReloadGUI
 
         void updateMonitorMode()
         {
+            tmrMonitor.Interval = (int)(numMonitorInterval.Value *.5M);
             tmrMonitor.Enabled = chkMonitor.Checked;
             btnRead.Enabled = !chkMonitor.Checked;
 
@@ -233,6 +304,43 @@ namespace ReloadGUI
         private void numMonitorInterval_ValueChanged(object sender, EventArgs e)
         {
             updateMonitorMode();
+        }
+
+        private void btnBootloader_Click(object sender, EventArgs e)
+        {
+            if (m_portC.setBootloaderMode())
+            {
+                m_portC.disconnect();
+                status.Text = "Disconnected";
+                btnConnect.Text = "Connect";
+                btnConnect.Enabled = false;
+                grpControlPanel.Enabled = false;
+                tmrMonitor.Enabled = false;
+            }
+        }
+
+        
+        private void button1_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void btnZero_Click(object sender, EventArgs e)
+        {
+            numSetCurrent.Value = 0M;
+        }
+
+        private void tmrSetCurrent_Tick(object sender, EventArgs e)
+        {
+            if (chkAutoSet.Checked)
+            {
+                float deviceSetCurrent = m_portC.getSetCurrent() / 1000f;
+                if (numSetCurrent.Value != (decimal)deviceSetCurrent)
+                {
+                    numSetCurrent.Value = (decimal)deviceSetCurrent;
+                }
+            }
+
         }
 
        

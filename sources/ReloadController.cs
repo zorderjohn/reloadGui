@@ -4,13 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO.Ports;
+using System.Threading;
+using System.Diagnostics;
 
 namespace ReloadGUI
 {
     class ReloadController
     {
         SerialPort sp;
-        private static int readTimeout = 50;
+        private static int readTimeout = 100;
         private static int comSpeed = 115200;
         private static int minCurrent = 0;
         private static int maxCurrent = 99000;
@@ -97,59 +99,140 @@ namespace ReloadGUI
             return "";
         }
 
-        private string[] command(string cmd, string expected)
+        private string[] command(string cmd, string expected, int timeout = 200)
         {
             if (!sp.IsOpen)
             {
                 return null;
             }
+            sp.ReadTimeout = timeout;
 
-            sp.WriteLine(cmd);
+            if (cmd != "")
+            {
+                sp.WriteLine(cmd);
+                //Thread.Sleep(20);
+            }
+            if (expected == "")
+            {
+                return null;
+            }
             string[] response = null;
-            try
+            bool readAgain;
+            int trialsReamaining = 10;
+            do
             {
-                response = sp.ReadLine().Split(new char[] { ' ' }, 2);
-            }
-            catch (TimeoutException t)
-            {
-                return null;
-            }
-            if (response == null || response.Length == 0)
-            {
-                return null;
-            }
-            else if (response[0] == "overtemp")
-            {
-                devStatus = DeviceStatus.DEV_STATUS_OVERTEMP;
-                return null;
-            }
-            else if (response[0] == "undervolt")
-            {
-                devStatus = DeviceStatus.DEV_STATUS_UNDERVOLT;
-                return null;
-            }
-            else if (response[0] == "err")
-            {
-                devStatus = DeviceStatus.DEV_STATUS_ERR;
-                if (response.Length > 0)
+                readAgain = false;
+                try
                 {
-                    errDesc = response[1];
+                    response = sp.ReadLine().Split(new char[] { ' ' }, 2);
+                    /*if (response.Length > 0)
+                        Debug.Print(response[0]);
+                    else
+                        Debug.Print("RRRRR");*/
                 }
-                return null;
-            }
-            else if (response[0] == "read")
-            {
-                if (response.Length > 0)
+                catch (TimeoutException t)
                 {
-                    processReadValues(response[1]);
+                   // Debug.Print("_");
+                    return null;
                 }
-            }
-            else if (response[0] != expected)
-            {
-                return null;
-            }
+                if (response == null || response.Length == 0)
+                {
+                    return null;
+                }
+                else if (response[0] == "overtemp")
+                {
+                    devStatus = DeviceStatus.DEV_STATUS_OVERTEMP;
+                    return null;
+                }
+                else if (response[0] == "undervolt")
+                {
+                    devStatus = DeviceStatus.DEV_STATUS_UNDERVOLT;
+                    return null;
+                }
+                else if (response[0] == "err")
+                {
+                    devStatus = DeviceStatus.DEV_STATUS_ERR;
+                    if (response.Length > 0)
+                    {
+                        errDesc = response[1];
+                    }
+                    return null;
+                }
+                else if (response[0] == "read")
+                {
+                    
+                    if (response.Length > 0)
+                    {
+                        processReadValues(response[1]);
+                    }
+
+                    readAgain = (response[0] != expected && trialsReamaining>0);
+                    trialsReamaining--;
+                }
+                else if (response[0] != expected)
+                {
+                    return null;
+                }
+            } while (readAgain);
+
             return response;                
         }
+        private string[] tryRead()
+        {
+            if (!sp.IsOpen)
+            {
+                return null;
+            }
+            sp.ReadTimeout = 5;
+
+            string[] response = null;
+            bool readAgain = true;
+            do
+            {
+                try
+                {
+                    response = sp.ReadLine().Split(new char[] { ' ' }, 2);
+                }
+                catch (TimeoutException t)
+                {
+                    return response;
+                }
+                if (response == null || response.Length == 0)
+                {
+                    return null;
+                }
+                else if (response[0] == "overtemp")
+                {
+                    devStatus = DeviceStatus.DEV_STATUS_OVERTEMP;
+                    return null;
+                }
+                else if (response[0] == "undervolt")
+                {
+                    devStatus = DeviceStatus.DEV_STATUS_UNDERVOLT;
+                    return null;
+                }
+                else if (response[0] == "err")
+                {
+                    devStatus = DeviceStatus.DEV_STATUS_ERR;
+                    if (response.Length > 0)
+                    {
+                        errDesc = response[1];
+                    }
+                    return null;
+                }
+                else if (response[0] == "read")
+                {
+                    if (response.Length > 0)
+                    {
+                        processReadValues(response[1]);
+                    }
+                    
+                }               
+            } while (readAgain);
+
+            return response;
+        }
+
         public string getDevErrorDesc()
         {
             return errDesc;
@@ -170,29 +253,45 @@ namespace ReloadGUI
             return -1;
         }
 
-        public int getCurrent() 
+        public float getCurrent() 
         {
             return readCurrent;
         }
 
-        public int getVoltage() 
+        public float getVoltage() 
         {
             return readVoltage;
         }
 
-        public int getPower()
+        public float getPower()
         {
-            return readCurrent * readVoltage;
+            return readCurrent * readVoltage * 0.001f;
         }
 
-        public void updateCurrentVoltage()
+        //Sends the request to the device and reads the values
+        public void requestUpdate()
         {
             string[] response = command("read", "read");
             if (response != null && response.Length > 1)
             {
-                processReadValues(response[1]);
+                if (response[0] == "read")
+                {
+                    processReadValues(response[1]);
+                }
             }
-            
+        }
+
+        //Assumes monitor mode enabled, and just tries to read the values
+        public void updateCurrentVoltage()
+        {
+            string[] response = tryRead();
+            if (response != null && response.Length > 1)
+            {
+                if (response[0] == "read")
+                {
+                    processReadValues(response[1]);
+                }
+            }
         }
              
         public void processReadValues(string strValues) 
@@ -210,8 +309,58 @@ namespace ReloadGUI
 
         public bool setMonitorMode(int interval=100)
         {
-            return command("monitor " + interval.ToString(), "monitor") != null;
+            command("monitor " + interval.ToString(), "");
+            return true;
         }
+
+        public bool setBootloaderMode()
+        {
+            string[] response = command("bl", "ok");
+            return response != null;
+        }
+
+        public bool setADCOffset()
+        {
+            string[] response = command("cal o", "ok");
+            return response != null;
+        }
+
+        public bool setADCVolt(int voltage)
+        {
+            if (voltage <= 0)
+                return false;
+
+            string[] response = command("cal v " + voltage.ToString(), "ok");
+            return response != null;
+        }
+
+        public bool setADCCurrent(int current)
+        {
+            if (current <= 0)
+                return false;
+
+            string[] response = command("cal i " + current.ToString(), "ok");
+            return response != null;
+        }
+
+        public float getSetCurrent()
+        {
+            string[] response = command("set", "set");
+            float result = 0f;
+
+            if (response != null && response.Length > 1)
+            {
+
+                if(float.TryParse(response[1], out result))
+                {
+                    return result;
+                }
+                
+            }
+            return result;
+        }
+
+
 
         
     }

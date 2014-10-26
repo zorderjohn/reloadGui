@@ -29,6 +29,12 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.grpConn = new System.Windows.Forms.GroupBox();
             this.cmbPort = new System.Windows.Forms.ComboBox();
             this.btnConnect = new System.Windows.Forms.Button();
@@ -64,6 +70,15 @@
             this.numMonitorInterval = new System.Windows.Forms.NumericUpDown();
             this.lblMs = new System.Windows.Forms.Label();
             this.grpMonitor = new System.Windows.Forms.GroupBox();
+            this.chartTime = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.button1 = new System.Windows.Forms.Button();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.btnBootloader = new System.Windows.Forms.Button();
+            this.btnZero = new System.Windows.Forms.Button();
+            this.tmrSetCurrent = new System.Windows.Forms.Timer(this.components);
             this.grpConn.SuspendLayout();
             this.grpInfo.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -71,6 +86,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.numSetCurrent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numMonitorInterval)).BeginInit();
             this.grpMonitor.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chartTime)).BeginInit();
+            this.groupBox1.SuspendLayout();
+            this.tabControl1.SuspendLayout();
+            this.tabPage1.SuspendLayout();
             this.SuspendLayout();
             // 
             // grpConn
@@ -145,9 +164,9 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.status});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 474);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 627);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(623, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(781, 22);
             this.statusStrip1.TabIndex = 2;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -162,9 +181,11 @@
             this.grpControlPanel.Controls.Add(this.prgAutoSet);
             this.grpControlPanel.Controls.Add(this.chkAutoSet);
             this.grpControlPanel.Controls.Add(this.btnSetCurrent);
+            this.grpControlPanel.Controls.Add(this.btnZero);
             this.grpControlPanel.Controls.Add(this.btnDec1000);
             this.grpControlPanel.Controls.Add(this.btnDec100);
             this.grpControlPanel.Controls.Add(this.btnDec10);
+            this.grpControlPanel.Controls.Add(this.btnBootloader);
             this.grpControlPanel.Controls.Add(this.btnInc1000);
             this.grpControlPanel.Controls.Add(this.btnInc100);
             this.grpControlPanel.Controls.Add(this.btnInc10);
@@ -174,14 +195,14 @@
             this.grpControlPanel.Enabled = false;
             this.grpControlPanel.Location = new System.Drawing.Point(12, 150);
             this.grpControlPanel.Name = "grpControlPanel";
-            this.grpControlPanel.Size = new System.Drawing.Size(194, 161);
+            this.grpControlPanel.Size = new System.Drawing.Size(194, 290);
             this.grpControlPanel.TabIndex = 3;
             this.grpControlPanel.TabStop = false;
             this.grpControlPanel.Text = "Control Panel";
             // 
             // prgAutoSet
             // 
-            this.prgAutoSet.Location = new System.Drawing.Point(117, 71);
+            this.prgAutoSet.Location = new System.Drawing.Point(119, 174);
             this.prgAutoSet.MarqueeAnimationSpeed = 0;
             this.prgAutoSet.Maximum = 10;
             this.prgAutoSet.Name = "prgAutoSet";
@@ -195,7 +216,7 @@
             // chkAutoSet
             // 
             this.chkAutoSet.AutoSize = true;
-            this.chkAutoSet.Location = new System.Drawing.Point(9, 73);
+            this.chkAutoSet.Location = new System.Drawing.Point(11, 176);
             this.chkAutoSet.Name = "chkAutoSet";
             this.chkAutoSet.Size = new System.Drawing.Size(65, 17);
             this.chkAutoSet.TabIndex = 5;
@@ -206,7 +227,7 @@
             // btnSetCurrent
             // 
             this.btnSetCurrent.Enabled = false;
-            this.btnSetCurrent.Location = new System.Drawing.Point(117, 41);
+            this.btnSetCurrent.Location = new System.Drawing.Point(119, 144);
             this.btnSetCurrent.Name = "btnSetCurrent";
             this.btnSetCurrent.Size = new System.Drawing.Size(44, 23);
             this.btnSetCurrent.TabIndex = 4;
@@ -216,7 +237,7 @@
             // 
             // btnDec1000
             // 
-            this.btnDec1000.Location = new System.Drawing.Point(105, 125);
+            this.btnDec1000.Location = new System.Drawing.Point(107, 228);
             this.btnDec1000.Name = "btnDec1000";
             this.btnDec1000.Size = new System.Drawing.Size(57, 23);
             this.btnDec1000.TabIndex = 3;
@@ -226,7 +247,7 @@
             // 
             // btnDec100
             // 
-            this.btnDec100.Location = new System.Drawing.Point(57, 125);
+            this.btnDec100.Location = new System.Drawing.Point(59, 228);
             this.btnDec100.Name = "btnDec100";
             this.btnDec100.Size = new System.Drawing.Size(42, 23);
             this.btnDec100.TabIndex = 3;
@@ -236,7 +257,7 @@
             // 
             // btnDec10
             // 
-            this.btnDec10.Location = new System.Drawing.Point(9, 125);
+            this.btnDec10.Location = new System.Drawing.Point(11, 228);
             this.btnDec10.Name = "btnDec10";
             this.btnDec10.Size = new System.Drawing.Size(42, 23);
             this.btnDec10.TabIndex = 3;
@@ -246,7 +267,7 @@
             // 
             // btnInc1000
             // 
-            this.btnInc1000.Location = new System.Drawing.Point(105, 96);
+            this.btnInc1000.Location = new System.Drawing.Point(107, 199);
             this.btnInc1000.Name = "btnInc1000";
             this.btnInc1000.Size = new System.Drawing.Size(57, 23);
             this.btnInc1000.TabIndex = 2;
@@ -256,7 +277,7 @@
             // 
             // btnInc100
             // 
-            this.btnInc100.Location = new System.Drawing.Point(57, 96);
+            this.btnInc100.Location = new System.Drawing.Point(59, 199);
             this.btnInc100.Name = "btnInc100";
             this.btnInc100.Size = new System.Drawing.Size(42, 23);
             this.btnInc100.TabIndex = 2;
@@ -266,7 +287,7 @@
             // 
             // btnInc10
             // 
-            this.btnInc10.Location = new System.Drawing.Point(9, 96);
+            this.btnInc10.Location = new System.Drawing.Point(11, 199);
             this.btnInc10.Name = "btnInc10";
             this.btnInc10.Size = new System.Drawing.Size(42, 23);
             this.btnInc10.TabIndex = 2;
@@ -283,7 +304,7 @@
             0,
             0,
             196608});
-            this.numSetCurrent.Location = new System.Drawing.Point(9, 41);
+            this.numSetCurrent.Location = new System.Drawing.Point(11, 144);
             this.numSetCurrent.Maximum = new decimal(new int[] {
             99,
             0,
@@ -300,7 +321,7 @@
             // 
             this.lblSetCurrent.AutoSize = true;
             this.lblSetCurrent.Font = new System.Drawing.Font("Bookman Old Style", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblSetCurrent.Location = new System.Drawing.Point(90, 43);
+            this.lblSetCurrent.Location = new System.Drawing.Point(92, 146);
             this.lblSetCurrent.Name = "lblSetCurrent";
             this.lblSetCurrent.Size = new System.Drawing.Size(21, 19);
             this.lblSetCurrent.TabIndex = 0;
@@ -309,11 +330,11 @@
             // lblSetCurrentT
             // 
             this.lblSetCurrentT.AutoSize = true;
-            this.lblSetCurrentT.Location = new System.Drawing.Point(6, 25);
+            this.lblSetCurrentT.Location = new System.Drawing.Point(8, 16);
             this.lblSetCurrentT.Name = "lblSetCurrentT";
             this.lblSetCurrentT.Size = new System.Drawing.Size(62, 13);
             this.lblSetCurrentT.TabIndex = 0;
-            this.lblSetCurrentT.Text = "Set current:";
+            this.lblSetCurrentT.Text = "Commands:";
             // 
             // lblPower
             // 
@@ -417,11 +438,16 @@
             0,
             0,
             0});
+            this.numMonitorInterval.Minimum = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
             this.numMonitorInterval.Name = "numMonitorInterval";
             this.numMonitorInterval.Size = new System.Drawing.Size(56, 20);
             this.numMonitorInterval.TabIndex = 11;
             this.numMonitorInterval.Value = new decimal(new int[] {
-            500,
+            100,
             0,
             0,
             0});
@@ -448,18 +474,147 @@
             this.grpMonitor.Controls.Add(this.lblVoltT);
             this.grpMonitor.Controls.Add(this.LblPowerT);
             this.grpMonitor.Controls.Add(this.lblVolt);
-            this.grpMonitor.Location = new System.Drawing.Point(12, 317);
+            this.grpMonitor.Location = new System.Drawing.Point(12, 446);
             this.grpMonitor.Name = "grpMonitor";
             this.grpMonitor.Size = new System.Drawing.Size(194, 153);
             this.grpMonitor.TabIndex = 4;
             this.grpMonitor.TabStop = false;
             this.grpMonitor.Text = "Monitor";
             // 
+            // chartTime
+            // 
+            this.chartTime.BackColor = System.Drawing.Color.Transparent;
+            chartArea1.AxisY.Maximum = 15D;
+            chartArea1.AxisY.Minimum = 0D;
+            chartArea1.AxisY.Title = "Volts";
+            chartArea1.AxisY2.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.True;
+            chartArea1.AxisY2.Maximum = 5D;
+            chartArea1.AxisY2.Minimum = 0D;
+            chartArea1.AxisY2.Title = "Amps";
+            chartArea1.Name = "ChartArea1";
+            this.chartTime.ChartAreas.Add(chartArea1);
+            legend1.Alignment = System.Drawing.StringAlignment.Center;
+            legend1.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Bottom;
+            legend1.LegendStyle = System.Windows.Forms.DataVisualization.Charting.LegendStyle.Row;
+            legend1.Name = "Legend1";
+            this.chartTime.Legends.Add(legend1);
+            this.chartTime.Location = new System.Drawing.Point(6, 48);
+            this.chartTime.Margin = new System.Windows.Forms.Padding(2);
+            this.chartTime.Name = "chartTime";
+            series1.ChartArea = "ChartArea1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series1.Legend = "Legend1";
+            series1.Name = "Voltage";
+            series2.ChartArea = "ChartArea1";
+            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series2.Legend = "Legend1";
+            series2.Name = "Intensity";
+            series2.YAxisType = System.Windows.Forms.DataVisualization.Charting.AxisType.Secondary;
+            series3.ChartArea = "ChartArea1";
+            series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series3.Legend = "Legend1";
+            series3.Name = "SetIntensity";
+            series3.YAxisType = System.Windows.Forms.DataVisualization.Charting.AxisType.Secondary;
+            series3.YValuesPerPoint = 2;
+            series4.ChartArea = "ChartArea1";
+            series4.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series4.Legend = "Legend1";
+            series4.Name = "Power";
+            this.chartTime.Series.Add(series1);
+            this.chartTime.Series.Add(series2);
+            this.chartTime.Series.Add(series3);
+            this.chartTime.Series.Add(series4);
+            this.chartTime.Size = new System.Drawing.Size(529, 390);
+            this.chartTime.TabIndex = 5;
+            this.chartTime.Text = "chart1";
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.chartTime);
+            this.groupBox1.Location = new System.Drawing.Point(6, 100);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(540, 489);
+            this.groupBox1.TabIndex = 6;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Graph";
+            // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Location = new System.Drawing.Point(212, 12);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(557, 587);
+            this.tabControl1.TabIndex = 7;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.button1);
+            this.tabPage1.Controls.Add(this.groupBox1);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(549, 561);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "Time";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(322, 6);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 7;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(549, 561);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "X/Y";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // btnBootloader
+            // 
+            this.btnBootloader.Location = new System.Drawing.Point(10, 32);
+            this.btnBootloader.Name = "btnBootloader";
+            this.btnBootloader.Size = new System.Drawing.Size(74, 23);
+            this.btnBootloader.TabIndex = 2;
+            this.btnBootloader.Text = "Bootloader";
+            this.btnBootloader.UseVisualStyleBackColor = true;
+            this.btnBootloader.Click += new System.EventHandler(this.btnBootloader_Click);
+            // 
+            // btnZero
+            // 
+            this.btnZero.Location = new System.Drawing.Point(42, 257);
+            this.btnZero.Name = "btnZero";
+            this.btnZero.Size = new System.Drawing.Size(101, 23);
+            this.btnZero.TabIndex = 3;
+            this.btnZero.Text = "0";
+            this.btnZero.UseVisualStyleBackColor = true;
+            this.btnZero.Click += new System.EventHandler(this.btnZero_Click);
+            // 
+            // tmrSetCurrent
+            // 
+            this.tmrSetCurrent.Enabled = true;
+            this.tmrSetCurrent.Interval = 500;
+            this.tmrSetCurrent.Tick += new System.EventHandler(this.tmrSetCurrent_Tick);
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(623, 496);
+            this.ClientSize = new System.Drawing.Size(781, 649);
+            this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.grpMonitor);
             this.Controls.Add(this.grpControlPanel);
             this.Controls.Add(this.statusStrip1);
@@ -480,6 +635,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.numMonitorInterval)).EndInit();
             this.grpMonitor.ResumeLayout(false);
             this.grpMonitor.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chartTime)).EndInit();
+            this.groupBox1.ResumeLayout(false);
+            this.tabControl1.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -522,6 +681,15 @@
         private System.Windows.Forms.NumericUpDown numMonitorInterval;
         private System.Windows.Forms.Label lblMs;
         private System.Windows.Forms.GroupBox grpMonitor;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chartTime;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnBootloader;
+        private System.Windows.Forms.Button btnZero;
+        private System.Windows.Forms.Timer tmrSetCurrent;
     }
 }
 
